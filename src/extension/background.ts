@@ -7,49 +7,36 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Message handling
 chrome.runtime.onMessage.addListener((message: any, _sender: chrome.runtime.MessageSender, sendResponse: (response: any) => void) => {
-  if (message.type === 'EXPORT_CONTENT') {
-    handleExport(message.data, message.format)
+  if (message.type === 'EXPORT_MARKDOWN') {
+    handleMarkdownExport(message.data)
       .then(result => sendResponse({ success: true, data: result }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
 });
 
-async function handleExport(data: any, format: string) {
-  let content: string;
-  let mimeType: string;
-  let extension: string;
-
-  switch (format) {
-    case 'json':
-      content = JSON.stringify(data, null, 2);
-      mimeType = 'application/json';
-      extension = 'json';
-      break;
-    case 'markdown':
-    case 'md':
-      // Simple markdown conversion for MVP
-      content = convertToMarkdown(data);
-      mimeType = 'text/markdown';
-      extension = 'md';
-      break;
-    case 'html':
-      // Simple HTML conversion for MVP
-      content = convertToHTML(data);
-      mimeType = 'text/html';
-      extension = 'html';
-      break;
-    default:
-      content = JSON.stringify(data, null, 2);
-      mimeType = 'application/json';
-      extension = 'json';
-  }
-
+async function handleMarkdownExport(data: any) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `pixelvault-capture-${timestamp}.${extension}`;
-
+  const filename = `pixelvault-capture-${timestamp}.md`;
+  
+  // Convert conversation turns to Markdown
+  let markdown = `# ${data.title}\n\n`;
+  markdown += `**URL:** ${data.url}\n\n`;
+  markdown += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
+  markdown += `**Messages:** ${data.conversationTurns?.length || 0}\n\n`;
+  markdown += `---\n\n`;
+  
+  // Process conversation turns
+  if (data.conversationTurns && data.conversationTurns.length > 0) {
+    for (const turn of data.conversationTurns) {
+      const role = turn.role === 'user' ? 'User' : 'Assistant';
+      markdown += `## ${role}\n\n`;
+      markdown += `${turn.content}\n\n`;
+    }
+  }
+  
   // Create blob and download
-  const blob = new Blob([content], { type: mimeType });
+  const blob = new Blob([markdown], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
 
   try {
@@ -59,126 +46,49 @@ async function handleExport(data: any, format: string) {
       saveAs: true
     });
     
+    // Wait for download to start
+    await waitForDownloadComplete(downloadId);
+    
     return { downloadId, filename };
   } finally {
     URL.revokeObjectURL(url);
   }
 }
 
-function convertToMarkdown(data: any): string {
-  let md = `# ${data.title}\n\n`;
-  md += `**URL:** ${data.url}\n\n`;
-  md += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
-  md += `---\n\n`;
-  
-  // Handle conversation turns if present
-  if (data.conversationTurns && data.conversationTurns.length > 0) {
-    for (const turn of data.conversationTurns) {
-      const role = turn.role === 'user' ? 'User' : 'Assistant';
-      md += `## ${role}\n\n`;
-      md += `${turn.content}\n\n`;
-    }
-  } else {
-    // Simple node traversal
-    function processNode(node: any, depth = 0): string {
-      let result = '';
-      const indent = '  '.repeat(depth);
-      
-      if (node.textContent) {
-        result += `${indent}${node.textContent}\n\n`;
-      }
-      
-      if (node.children) {
-        for (const child of node.children) {
-          result += processNode(child, depth + 1);
-        }
-      }
-      
-      return result;
-    }
+async function waitForDownloadComplete(downloadId: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const maxWait = 10000; // 10 seconds max wait
+    const startTime = Date.now();
     
-    for (const node of data.nodes) {
-      md += processNode(node);
-    }
-  }
-  
-  return md;
-}
-
-function convertToHTML(data: any): string {
-  let html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(data.title)}</title>
-  <style>
-    body { font-family: system-ui; max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-    .metadata { color: #666; font-size: 0.9em; }
-    .conversation-turn { margin: 20px 0; padding: 15px; border-radius: 8px; }
-    .user-turn { background: #e3f2fd; }
-    .assistant-turn { background: #f3e5f5; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>${escapeHtml(data.title)}</h1>
-    <div class="metadata">
-      <p><strong>URL:</strong> <a href="${escapeHtml(data.url)}">${escapeHtml(data.url)}</a></p>
-      <p><strong>Captured:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
-    </div>
-  </div>
-  <div class="content">
-`;
-
-  // Handle conversation turns if present
-  if (data.conversationTurns && data.conversationTurns.length > 0) {
-    for (const turn of data.conversationTurns) {
-      const turnClass = turn.role === 'user' ? 'user-turn' : 'assistant-turn';
-      const roleName = turn.role === 'user' ? 'User' : 'Assistant';
-      html += `<div class="conversation-turn ${turnClass}">\n`;
-      html += `<h3>${escapeHtml(roleName)}</h3>\n`;
-      html += `<p>${escapeHtml(turn.content)}</p>\n`;
-      html += `</div>\n`;
-    }
-  } else {
-    function processNode(node: any): string {
-      let result = '';
-      
-      if (node.textContent) {
-        result += `<p>${escapeHtml(node.textContent)}</p>\n`;
+    const checkDownload = () => {
+      if (Date.now() - startTime > maxWait) {
+        reject(new Error('Download confirmation timeout'));
+        return;
       }
       
-      if (node.children) {
-        for (const child of node.children) {
-          result += processNode(child);
+      chrome.downloads.search({ id: downloadId }, (results) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
         }
-      }
-      
-      return result;
-    }
+        
+        const download = results[0];
+        if (!download) {
+          reject(new Error('Download not found'));
+          return;
+        }
+        
+        // Download is considered complete when it's not in progress
+        if (download.state !== 'in_progress') {
+          resolve();
+          return;
+        }
+        
+        // Check again in 100ms
+        setTimeout(checkDownload, 100);
+      });
+    };
     
-    for (const node of data.nodes) {
-      html += processNode(node);
-    }
-  }
-  
-  html += `
-  </div>
-</body>
-</html>`;
-  
-  return html;
-}
-
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return text.replace(/[&<>"']/g, m => map[m]);
+    checkDownload();
+  });
 }

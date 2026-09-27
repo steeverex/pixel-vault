@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "PIXELVAULT",
   "version": "1.0.0",
-  "description": "High-fidelity browser extension for capturing complex web content and AI conversations",
+  "description": "Capture AI conversations to Markdown - supports ChatGPT, Claude, and similar platforms",
   "permissions": [
     "tabs",
     "scripting",
@@ -13,8 +13,7 @@
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {

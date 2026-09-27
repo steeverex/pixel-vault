@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Long ChatGPT Conversation Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      background: #fff;
+    }
+    [data-testid="conversation-turn"] {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    [data-message-author-role="user"] {
+      background: #f0f0f0;
+    }
+    [data-message-author-role="assistant"] {
+      background: #e8f4fd;
+    }
+    .markdown {
+      line-height: 1.6;
+    }
+    .markdown pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .markdown code {
+      font-family: 'Courier New', monospace;
+    }
+    .markdown h1, .markdown h2, .markdown h3 {
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+    }
+    .markdown ul, .markdown ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    .markdown blockquote {
+      border-left: 4px solid #ddd;
+      padding-left: 1em;
+      margin: 1em 0;
+      color: #666;
+    }
+    .scrollable-container {
+      height: 500px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Long ChatGPT Conversation Test</h1>
+  <p>This page simulates a long ChatGPT conversation for testing the PIXELVAULT extension.</p>
+
+  <div class="scrollable-container">
+    <!-- User Message 1 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>Can you help me understand machine learning basics?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistant Message 1 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>I'd be happy to help you understand machine learning basics! Machine learning is a subset of artificial intelligence that focuses on building systems that can learn from data.</p>
+          <h2>Key Concepts</h2>
+          <ul>
+            <li><strong>Supervised Learning</strong>: Learning from labeled data</li>
+            <li><strong>Unsupervised Learning</strong>: Finding patterns in unlabeled data</li>
+            <li><strong>Reinforcement Learning</strong>: Learning through trial and error</li>
+          </ul>
+          <h2>Common Algorithms</h2>
+          <pre><code class="language-python"># Example: Linear Regression
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X_train, y_train)</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Message 2 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>What's the difference between supervised and unsupervised learning?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistant Message 2 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Great question! Here's the main difference:</p>
+          <h3>Supervised Learning</h3>
+          <ul>
+            <li>Uses labeled training data</li>
+            <li>Has clear input-output pairs</li>
+            <li>Goal: Learn mapping from inputs to outputs</li>
+            <li>Examples: Classification, Regression</li>
+          </ul>
+          <h3>Unsupervised Learning</h3>
+          <ul>
+            <li>Uses unlabeled data</li>
+            <li>No explicit output labels</li>
+            <li>Goal: Discover patterns or structure</li>
+            <li>Examples: Clustering, Dimensionality Reduction</li>
+          </ul>
+          <blockquote>Think of supervised learning like learning with a teacher, while unsupervised learning is like self-study.</blockquote>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Message 3 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>Can you show me a simple classification example?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistant Message 3 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Here's a simple binary classification example using Python and scikit-learn:</p>
+          <pre><code class="language-python">from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# Load sample dataset
+iris = datasets.load_iris()
+X, y = iris.data, iris.target
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+# Train model
+model = LogisticRegression(max_iter=200)
+model.fit(X_train, y_train)
+
+# Make predictions
+predictions = model.predict(X_test)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, predictions)
+print(f"Accuracy: {accuracy:.2f}")</code></pre>
+          <p>This example uses the famous Iris dataset to classify flower species.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Message 4 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>What about neural networks? Are they better?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistant Message 4 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Neural networks are powerful but not always "better" - it depends on the problem:</p>
+          <h3>When Neural Networks Excel</h3>
+          <ul>
+            <li>Complex, non-linear relationships</li>
+            <li>Large datasets</li>
+            <li>Image and speech recognition</li>
+            <li>Natural language processing</li>
+          </ul>
+          <h3>When Traditional ML Might Be Better</h3>
+          <ul>
+            <li>Small datasets</li>
+            <li>Simple, interpretable models needed</li>
+            <li>Limited computational resources</li>
+            <li>Quick prototyping</li>
+          </ul>
+          <pre><code class="language-python"># Simple neural network with TensorFlow
+import tensorflow as tf
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy')</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Message 5 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>How do I choose the right algorithm for my problem?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistant Message 5 -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Choosing the right algorithm involves several considerations:</p>
+          <h3>Decision Framework</h3>
+          <ol>
+            <li><strong>Data Size</strong>: Small data → simpler models; Large data → complex models</li>
+            <li><strong>Interpretability</strong>: Need explanations → decision trees, linear models</li>
+            <li><strong>Accuracy vs Speed</strong>: Real-time → simpler models; Batch → complex models</li>
+            <li><strong>Data Type</strong>: Tabular → traditional ML; Images/Speech → deep learning</li>
+          </ol>
+          <h3>Practical Approach</h3>
+          <ul>
+            <li>Start with simple models as baselines</li>
+            <li>Try multiple algorithms and compare</li>
+            <li>Use cross-validation for robust evaluation</li>
+            <li>Consider deployment constraints</li>
+          </ul>
+          <blockquote>The best algorithm is often the simplest one that meets your requirements.</blockquote>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional messages to make it a long conversation -->
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>What about overfitting? How do I prevent it?</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Overfitting is when a model learns the training data too well, including noise. Here are prevention techniques:</p>
+          <h3>Regularization</h3>
+          <ul>
+            <li>L1/L2 regularization adds penalty terms</li>
+            <li>Dropout for neural networks</li>
+            <li>Early stopping during training</li>
+          </ul>
+          <h3>Data Techniques</h3>
+          <ul>
+            <li>More training data</li>
+            <li>Data augmentation</li>
+            <li>Cross-validation</li>
+          </ul>
+          <pre><code class="language-python"># L2 regularization example
+from sklearn.linear_model import Ridge
+model = Ridge(alpha=1.0)  # Higher alpha = more regularization</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>Can you explain bias-variance tradeoff?</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>The bias-variance tradeoff is fundamental in machine learning:</p>
+          <h3>Bias</h3>
+          <ul>
+            <li>Error from oversimplified assumptions</li>
+            <li>High bias → underfitting</li>
+            <li>Example: Linear model for non-linear data</li>
+          </ul>
+          <h3>Variance</h3>
+          <ul>
+            <li>Error from sensitivity to training data</li>
+            <li>High variance → overfitting</li>
+            <li>Example: Complex model on small data</li>
+          </ul>
+          <h3>The Tradeoff</h3>
+          <ul>
+            <li>Decreasing bias increases variance</li>
+            <li>Decreasing variance increases bias</li>
+            <li>Goal: Find optimal balance</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>How do I evaluate model performance?</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Model evaluation depends on the task type:</p>
+          <h3>Classification Metrics</h3>
+          <ul>
+            <li>Accuracy: Overall correctness</li>
+            <li>Precision: True positive rate</li>
+            <li>Recall: Sensitivity</li>
+            <li>F1-Score: Harmonic mean of precision and recall</li>
+            <li>ROC-AUC: Threshold-independent performance</li>
+          </ul>
+          <h3>Regression Metrics</h3>
+          <ul>
+            <li>MSE: Mean squared error</li>
+            <li>MAE: Mean absolute error</li>
+            <li>R²: Coefficient of determination</li>
+          </ul>
+          <pre><code class="language-python">from sklearn.metrics import classification_report
+print(classification_report(y_test, predictions))</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="user">
+        <div class="markdown">
+          <p>What tools do you recommend for ML beginners?</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-testid="conversation-turn">
+      <div data-message-author-role="assistant">
+        <div class="markdown">
+          <p>Here are my top recommendations for ML beginners:</p>
+          <h3>Python Libraries</h3>
+          <ul>
+            <li><strong>scikit-learn</strong>: Great for traditional ML</li>
+            <li><strong>TensorFlow/Keras</strong>: Deep learning</li>
+            <li><strong>PyTorch</strong>: Research and deep learning</li>
+            <li><strong>pandas</strong>: Data manipulation</li>
+            <li><strong>matplotlib/seaborn</strong>: Visualization</li>
+          </ul>
+          <h3>Learning Resources</h3>
+          <ul>
+            <li>Andrew Ng's Machine Learning course</li>
+            <li>Fast.ai practical deep learning</li>
+            <li>Kaggle competitions and datasets</li>
+            <li>Jupyter notebooks for experimentation</li>
+          </ul>
+          <blockquote>Start with scikit-learn for traditional ML, then move to deep learning frameworks as needed.</blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+    <em>End of test conversation. This simulates a typical ChatGPT interaction with 10 message pairs covering various ML topics.</em>
+  </p>
+</body>
+</html>

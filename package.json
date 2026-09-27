@@ -9,7 +9,7 @@
     "build:app": "tsc -b && vite build",
     "build:extension": "node build-extension.cjs",
     "lint": "oxlint",
-    "test": "echo 'No unit tests configured - use npm run test:e2e for Playwright tests'",
+    "test": "vitest run",
     "test:e2e": "playwright test",
     "preview": "vite preview"
   },
