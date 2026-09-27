@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIXELVAULT Test Fixture</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .conversation-turn {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .user-turn {
+      background: #e3f2fd;
+    }
+    .assistant-turn {
+      background: #f3e5f5;
+    }
+    .code-block {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .scrollable-area {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .scrollable-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>PIXELVAULT Test Fixture</h1>
+  <p>This is a comprehensive test page for the PIXELVAULT extension capture engine.</p>
+
+  <h2>LaTeX Math</h2>
+  <p>Here are some mathematical expressions:</p>
+  <p>E = mc²</p>
+  <p>∫₀^∞ e^(-x²) dx = √π/2</p>
+  <p>∑_{i=1}^n i = n(n+1)/2</p>
+
+  <h2>Code Blocks</h2>
+  <div class="code-block">
+    <pre><code class="language-javascript">function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10));</code></pre>
+  </div>
+
+  <div class="code-block">
+    <pre><code class="language-python">def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)</code></pre>
+  </div>
+
+  <h2>SVG Graphics</h2>
+  <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="80" fill="#6366f1" />
+    <rect x="50" y="50" width="100" height="100" fill="#10b981" opacity="0.7" />
+    <text x="100" y="105" text-anchor="middle" fill="white" font-size="20">SVG Test</text>
+  </svg>
+
+  <h2>Canvas Graphics</h2>
+  <canvas id="testCanvas" width="300" height="150"></canvas>
+  <script>
+    const canvas = document.getElementById('testCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#6366f1';
+    ctx.fillRect(0, 0, 150, 75);
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(150, 75, 150, 75);
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.fillText('Canvas Test', 100, 80);
+  </script>
+
+  <h2>Fake AI Conversation</h2>
+  <div class="conversation-turn user-turn">
+    <h3>User</h3>
+    <p>Can you explain how to implement a binary search algorithm?</p>
+  </div>
+
+  <div class="conversation-turn assistant-turn">
+    <h3>Assistant</h3>
+    <p>Certainly! Binary search is an efficient algorithm for finding an item from a sorted list of items. It works by repeatedly dividing in half the portion of the list that could contain the item, until you've narrowed down the possible locations to just one.</p>
+    <p>Here's a simple implementation in JavaScript:</p>
+    <pre><code class="language-javascript">function binarySearch(arr, target) {
+  let left = 0;
+  let right = arr.length - 1;
+  
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    
+    if (arr[mid] === target) {
+      return mid;
+    } else if (arr[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  
+  return -1; // Not found
+}</code></pre>
+  </div>
+
+  <div class="conversation-turn user-turn">
+    <h3>User</h3>
+    <p>What's the time complexity of binary search?</p>
+  </div>
+
+  <div class="conversation-turn assistant-turn">
+    <h3>Assistant</h3>
+    <p>Binary search has a time complexity of O(log n), where n is the number of elements in the sorted array. This is much more efficient than linear search (O(n)) for large datasets.</p>
+  </div>
+
+  <h2>Long Scrollable Area</h2>
+  <div class="scrollable-area" id="scrollableContainer">
+    <div class="scrollable-item">Item 1: Lorem ipsum dolor sit amet</div>
+    <div class="scrollable-item">Item 2: Consectetur adipiscing elit</div>
+    <div class="scrollable-item">Item 3: Sed do eiusmod tempor incididunt</div>
+    <div class="scrollable-item">Item 4: Ut labore et dolore magna aliqua</div>
+    <div class="scrollable-item">Item 5: Ut enim ad minim veniam</div>
+    <div class="scrollable-item">Item 6: Quis nostrud exercitation ullamco</div>
+    <div class="scrollable-item">Item 7: Laboris nisi ut aliquip ex ea</div>
+    <div class="scrollable-item">Item 8: Commodo consequat</div>
+    <div class="scrollable-item">Item 9: Duis aute irure dolor in reprehenderit</div>
+    <div class="scrollable-item">Item 10: Voluptate velit esse cillum dolore</div>
+    <div class="scrollable-item">Item 11: Eu fugiat nulla pariatur</div>
+    <div class="scrollable-item">Item 12: Excepteur sint occaecat cupidatat</div>
+    <div class="scrollable-item">Item 13: Non proident, sunt in culpa</div>
+    <div class="scrollable-item">Item 14: Qui officia deserunt mollit anim</div>
+    <div class="scrollable-item">Item 15: Id est laborum</div>
+  </div>
+
+  <h2>Tables</h2>
+  <table border="1" cellpadding="10" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>City</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>John Doe</td>
+        <td>30</td>
+        <td>New York</td>
+      </tr>
+      <tr>
+        <td>Jane Smith</td>
+        <td>25</td>
+        <td>Los Angeles</td>
+      </tr>
+      <tr>
+        <td>Bob Johnson</td>
+        <td>35</td>
+        <td>Chicago</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Lists</h2>
+  <h3>Unordered List</h3>
+  <ul>
+    <li>First item</li>
+    <li>Second item</li>
+    <li>Third item
+      <ul>
+        <li>Nested item 1</li>
+        <li>Nested item 2</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>Ordered List</h3>
+  <ol>
+    <li>First step</li>
+    <li>Second step</li>
+    <li>Third step</li>
+  </ol>
+
+  <h2>Images</h2>
+  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%236366f1'/%3E%3Ctext x='50' y='50' text-anchor='middle' fill='white'%3EIMG%3C/text%3E%3C/svg%3E" alt="Test image (base64 SVG)" />
+
+  <p>End of test fixture.</p>
+</body>
+</html>

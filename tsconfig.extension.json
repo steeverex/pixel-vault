@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["@types/chrome"],
+    "lib": ["ES2023", "DOM"],
+    "noEmit": false
+  },
+  "include": ["src/extension/**/*", "src/engine/**/*"]
+}
