@@ -200,4 +200,21 @@ test.describe('PIXELVAULT Download Tests', () => {
     const markdownElements = page.locator('.markdown');
     await expect(markdownElements).toHaveCount(0);
   });
+
+  test('should load Java study notes fixture', async ({ page }) => {
+    const fixturePath = process.cwd() + '/tests/fixtures/java-study-notes.html';
+    await page.goto(`file://${fixturePath}`);
+    await expect(page).toHaveTitle('Java Study Notes Test Fixture');
+  });
+
+  test('should verify Java fixture has SVG diagram', async ({ page }) => {
+    const fixturePath = process.cwd() + '/tests/fixtures/java-study-notes.html';
+    await page.goto(`file://${fixturePath}`);
+
+    const svgs = page.locator('svg');
+    await expect(svgs).toHaveCount(1);
+    
+    const assistantMessages = page.locator('[data-message-author-role="assistant"]');
+    await expect(assistantMessages).toHaveCount(4);
+  });
 });

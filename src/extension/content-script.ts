@@ -54,10 +54,15 @@ async function handleMarkdownCapture(_options: ExportOptions): Promise<CaptureRe
     throw new Error('No assistant messages found. The page may not contain any AI responses yet.');
   }
 
-  // Collect only content assets (images, SVGs, canvas) from captured content
-  console.log('Collecting content assets...');
-  const contentAssets = await collectContentAssets(document, conversationTurns);
-  result.assets = contentAssets;
+  // Collect assets from conversation turns
+  console.log('Collecting assets from conversation turns...');
+  const allAssets: any[] = [];
+  for (const turn of conversationTurns) {
+    if (turn.metadata?.assets) {
+      allAssets.push(...turn.metadata.assets);
+    }
+  }
+  result.assets = allAssets;
 
   const endTime = Date.now();
   console.log(`Capture completed in ${endTime - startTime}ms`);
@@ -157,16 +162,17 @@ async function captureChatGPTTurns(document: Document, turns: any[], seenContent
       const rect = messageEl.getBoundingClientRect();
       const position = rect.top + window.scrollY;
 
-      // Use the detector to extract content
-      const content = AIConversationDetector.extractContentFromElement(messageEl);
+      // Use the detector to extract content with assets
+      const result = AIConversationDetector.extractContentWithAssets(messageEl);
       
       turns.push({
         role: 'assistant',
-        content,
+        content: result.content,
         timestamp: new Date().toISOString(),
         position,
         metadata: {
-          platform: 'chatgpt'
+          platform: 'chatgpt',
+          assets: result.assets
         }
       });
     } catch (e) {
@@ -188,15 +194,16 @@ async function captureClaudeTurns(document: Document, turns: any[], seenContent:
       const rect = messageEl.getBoundingClientRect();
       const position = rect.top + window.scrollY;
 
-      const content = AIConversationDetector.extractContentFromElement(messageEl);
+      const result = AIConversationDetector.extractContentWithAssets(messageEl);
       
       turns.push({
         role: 'assistant',
-        content,
+        content: result.content,
         timestamp: new Date().toISOString(),
         position,
         metadata: {
-          platform: 'claude'
+          platform: 'claude',
+          assets: result.assets
         }
       });
     } catch (e) {
@@ -226,15 +233,16 @@ async function captureGenericTurns(document: Document, turns: any[], seenContent
         const rect = el.getBoundingClientRect();
         const position = rect.top + window.scrollY;
 
-        const content = AIConversationDetector.extractContentFromElement(el);
+        const result = AIConversationDetector.extractContentWithAssets(el);
         
         turns.push({
           role: 'assistant',
-          content,
+          content: result.content,
           timestamp: new Date().toISOString(),
           position,
           metadata: {
-            platform: 'generic'
+            platform: 'generic',
+            assets: result.assets
           }
         });
       } catch (e) {
@@ -248,112 +256,6 @@ function createContentFingerprint(element: Element): string {
   const text = element.textContent?.slice(0, 200) || '';
   const className = element.className || '';
   return `${className}:${text}`.replace(/\s+/g, '');
-}
-
-async function collectContentAssets(document: Document, conversationTurns: any[]): Promise<any[]> {
-  const assets: any[] = [];
-  const processedUrls = new Set<string>();
-
-  // Collect images, SVGs, and canvas from conversation content
-  for (const turn of conversationTurns) {
-    const content = turn.content || '';
-    
-    // Extract image URLs from markdown
-    const imageMatches = content.match(/!\[.*?\]\((.*?)\)/g);
-    if (imageMatches) {
-      for (const match of imageMatches) {
-        const urlMatch = match.match(/!\[.*?\]\((.*?)\)/);
-        if (urlMatch && urlMatch[1]) {
-          const url = urlMatch[1];
-          if (!processedUrls.has(url) && !url.startsWith('data:')) {
-            processedUrls.add(url);
-            try {
-              const asset = await fetchContentAsset(url, 'image');
-              if (asset) {
-                assets.push(asset);
-              }
-            } catch (e) {
-              console.warn(`Failed to fetch image ${url}:`, e);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Also scan the DOM for images in captured conversation containers
-  const images = document.querySelectorAll('img');
-  for (const img of Array.from(images)) {
-    const src = (img as HTMLImageElement).src;
-    if (src && !src.startsWith('data:') && !processedUrls.has(src)) {
-      // Check if this image is within a conversation turn
-      const container = img.closest('[data-message-author-role]');
-      if (container) {
-        processedUrls.add(src);
-        try {
-          const asset = await fetchContentAsset(src, 'image');
-          if (asset) {
-            assets.push(asset);
-          }
-        } catch (e) {
-          console.warn(`Failed to fetch image ${src}:`, e);
-        }
-      }
-    }
-  }
-
-  return assets;
-}
-
-async function fetchContentAsset(url: string, type: string): Promise<any | null> {
-  try {
-    if (url.startsWith('data:')) {
-      return null;
-    }
-
-    // Skip cross-origin
-    if (!isSameOrigin(url)) {
-      console.warn(`Skipping cross-origin asset: ${url}`);
-      return null;
-    }
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      return null;
-    }
-
-    const blob = await response.blob();
-    const base64 = await blobToBase64(blob);
-
-    return {
-      type,
-      url,
-      blob,
-      base64,
-      mimeType: blob.type
-    };
-  } catch (e) {
-    console.warn(`Error fetching asset ${url}:`, e);
-    return null;
-  }
-}
-
-function isSameOrigin(url: string): boolean {
-  try {
-    const urlObj = new URL(url, window.location.href);
-    return urlObj.origin === window.location.origin;
-  } catch {
-    return false;
-  }
-}
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 }
 
 // Export function for testing

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import JSZip from 'jszip';
 
 function App() {
   const [captureStatus, setCaptureStatus] = useState<'idle' | 'capturing' | 'success' | 'error'>('idle');
@@ -132,7 +133,7 @@ function App() {
 
   const downloadMarkdown = async (data: any) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `pixelvault-capture-${timestamp}.md`;
+    const filename = `pixelvault-capture-${timestamp}`;
     
     // Convert conversation turns to Markdown - assistant only, no extra headings
     let markdown = `# ${data.title}\n\n`;
@@ -141,36 +142,76 @@ function App() {
     markdown += `**Responses:** ${data.conversationTurns?.length || 0}\n\n`;
     markdown += `---\n\n`;
     
-    // Process only assistant messages
-    if (data.conversationTurns && data.conversationTurns.length > 0) {
-      for (const turn of data.conversationTurns) {
-        if (turn.role === 'assistant') {
-          markdown += `${turn.content}\n\n`;
-          markdown += `---\n\n`;
-        }
+    // Process only assistant messages and collect assets
+    const allAssets: any[] = [];
+    for (const turn of data.conversationTurns) {
+      if (turn.role === 'assistant') {
+        markdown += `${turn.content}\n\n`;
+        markdown += `---\n\n`;
+      }
+      // Collect assets from metadata
+      if (turn.metadata?.assets) {
+        allAssets.push(...turn.metadata.assets);
       }
     }
     
-    // Create blob and object URL in popup context (where URL.createObjectURL is supported)
-    const blob = new Blob([markdown], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
+    // If assets exist, create ZIP
+    if (allAssets.length > 0) {
+      const zip = new JSZip();
+      
+      // Add Markdown file
+      zip.file('Conversation.md', markdown);
+      
+      // Add assets folder
+      const assetsFolder = zip.folder('assets');
+      
+      if (assetsFolder) {
+        // Add each asset
+        for (const asset of allAssets) {
+          if (asset.type === 'svg' || asset.type === 'canvas' || asset.type === 'image') {
+            // Convert data URL to blob
+            const data = asset.content;
+            const blob = await fetch(data).then(r => r.blob());
+            assetsFolder.file(asset.name, blob);
+          }
+        }
+      }
+      
+      // Generate ZIP blob
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
 
-    try {
-      // Trigger download using chrome.downloads API
-      const downloadId = await chrome.downloads.download({
-        url: url,
-        filename: filename,
-        saveAs: true
-      });
-      
-      console.log('Download started:', downloadId);
-      
-      // Wait a moment for download to initiate
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-    } finally {
-      // Revoke object URL after download is initiated
-      URL.revokeObjectURL(url);
+      try {
+        const downloadId = await chrome.downloads.download({
+          url: url,
+          filename: `${filename}.zip`,
+          saveAs: true
+        });
+        
+        console.log('ZIP download started:', downloadId);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    } else {
+      // No assets, download plain Markdown
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+
+      try {
+        const downloadId = await chrome.downloads.download({
+          url: url,
+          filename: `${filename}.md`,
+          saveAs: true
+        });
+        
+        console.log('Markdown download started:', downloadId);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+      } finally {
+        URL.revokeObjectURL(url);
+      }
     }
   };
 

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Study Notes Test Fixture</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      background: #fff;
+    }
+    [data-message-author-role] {
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    [data-message-author-role="user"] {
+      background: #e3f2fd;
+    }
+    [data-message-author-role="assistant"] {
+      background: #f3e5f5;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: 'Courier New', monospace;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f5f5f5;
+    }
+    svg {
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Java Study Notes Test Fixture</h1>
+  <p>This fixture contains SVG diagrams, Mermaid flowcharts, Java code, console output, tables, LaTeX equations, and images.</p>
+
+  <!-- User Message 1 -->
+  <div data-message-author-role="user">
+    <p>Explain Java exception hierarchy and how to handle exceptions.</p>
+  </div>
+
+  <!-- Assistant Message 1 -->
+  <div data-message-author-role="assistant">
+    <h2>Java Exception Hierarchy</h2>
+    <p>Java has a well-defined exception hierarchy. Here's the structure:</p>
+    
+    <!-- SVG Exception Hierarchy -->
+    <svg width="400" height="300" viewBox="0 0 400 300">
+      <rect x="150" y="10" width="100" height="40" fill="#e8f4fd" stroke="#333" stroke-width="2"/>
+      <text x="200" y="35" text-anchor="middle" font-size="12">Throwable</text>
+      
+      <rect x="150" y="70" width="100" height="40" fill="#fff3cd" stroke="#333" stroke-width="2"/>
+      <text x="200" y="95" text-anchor="middle" font-size="12">Error</text>
+      
+      <rect x="150" y="130" width="100" height="40" fill="#d4edda" stroke="#333" stroke-width="2"/>
+      <text x="200" y="155" text-anchor="middle" font-size="12">IOException</text>
+      
+      <rect x="150" y="190" width="100" height="40" fill="#f8d7da" stroke="#333" stroke-width="2"/>
+      <text x="200" y="215" text-anchor="middle" font-size="12">RuntimeException</text>
+      
+      <line x1="200" y1="50" x2="200" y2="70" stroke="#333" stroke-width="2"/>
+      <line x1="200" y1="110" x2="200" y2="130" stroke="#333" stroke-width="2"/>
+      <line x1="200" y1="170" x2="200" y2="190" stroke="#333" stroke-width="2"/>
+    </svg>
+
+    <h3>Exception Handling Example</h3>
+    <pre><code class="language-java">public class ExceptionExample {
+    public static void main(String[] args) {
+        try {
+            readFile("data.txt");
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("IO error: " + e.getMessage());
+        } finally {
+            System.out.println("Cleanup code");
+        }
+    }
+    
+    private static void readFile(String filename) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        String line = reader.readLine();
+        System.out.println(line);
+        reader.close();
+    }
+}</code></pre>
+
+    <h3>Console Output</h3>
+    <pre><code class="language-bash">File not found: data.txt (No such file or directory)
+Cleanup code</code></pre>
+  </div>
+
+  <!-- User Message 2 -->
+  <div data-message-author-role="user">
+    <p>Show me a flowchart for error handling.</p>
+  </div>
+
+  <!-- Assistant Message 2 -->
+  <div data-message-author-role="assistant">
+    <h2>Error Handling Flowchart</h2>
+    <pre><code class="language-mermaid">flowchart TD
+    A[Start] --> B{Is error possible?}
+    B -- Yes --> C[Try block]
+    B -- No --> D[Continue execution]
+    C --> E{Exception occurs?}
+    E -- Yes --> F[Catch block]
+    E -- No --> G[Finally block]
+    F --> G
+    G --> H[End]</code></pre>
+
+    <h3>Exception Types Table</h3>
+    <table>
+      <tr>
+        <th>Exception Type</th>
+        <th>Description</th>
+        <th>Checked</th>
+      </tr>
+      <tr>
+        <td>NullPointerException</td>
+        <td>Null reference access</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>IndexOutOfBoundsException</td>
+        <td>Array index out of range</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>FileNotFoundException</td>
+        <td>File not found</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>IOException</td>
+        <td>I/O operation failure</td>
+        <td>Yes</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- User Message 3 -->
+  <div data-message-author-role="user">
+    <p>What about mathematical operations in Java?</p>
+  </div>
+
+  <!-- Assistant Message 3 -->
+  <div data-message-author-role="assistant">
+    <h2>Mathematical Operations</h2>
+    <p>Java supports various mathematical operations through the Math class:</p>
+    
+    <h3>Common Math Functions</h3>
+    <ul>
+      <li><code>Math.sqrt(x)</code> - Square root</li>
+      <li><code>Math.pow(x, y)</code> - Power function</li>
+      <li><code>Math.abs(x)</code> - Absolute value</li>
+      <li><code>Math.round(x)</code> - Round to nearest integer</li>
+    </ul>
+
+    <h3>Mathematical Equations</h3>
+    <p>The quadratic formula is:</p>
+    <p>$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$</p>
+    
+    <p>And the Pythagorean theorem:</p>
+    <p>$$a^2 + b^2 = c^2$$</p>
+
+    <h3>Example Code</h3>
+    <pre><code class="language-java">public class MathExample {
+    public static void main(String[] args) {
+        double a = 3;
+        double b = 4;
+        double c = Math.sqrt(a * a + b * b);
+        System.out.println("Hypotenuse: " + c);
+        
+        // Quadratic formula
+        double discriminant = b * b - 4 * a * c;
+        double x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+        double x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+    }
+}</code></pre>
+  </div>
+
+  <!-- User Message 4 -->
+  <div data-message-author-role="user">
+    <p>Show me an image example.</p>
+  </div>
+
+  <!-- Assistant Message 4 -->
+  <div data-message-author-role="assistant">
+    <h2>Visual Example</h2>
+    <p>Here's a placeholder image:</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAf9SJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Placeholder image" width="200" height="100"/>
+    <p>This represents a 2x1 placeholder image for testing asset extraction.</p>
+  </div>
+
+  <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+    <em>Fixture contains SVG exception hierarchy, Mermaid flowchart, Java code, console output, table, LaTeX equations, and image for testing ZIP export.</em>
+  </p>
+</body>
+</html>

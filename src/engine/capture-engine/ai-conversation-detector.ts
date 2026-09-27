@@ -37,13 +37,17 @@ export class AIConversationDetector {
     const assistantMessages = document.querySelectorAll(this.chatGPTSelectors.assistantMessage);
     
     assistantMessages.forEach((messageEl, index) => {
-      const content = this.extractContentFromElement(messageEl);
-      if (content) {
+      const result = this.extractContentWithAssets(messageEl);
+      if (result.content) {
         turns.push({
           role: 'assistant',
-          content,
+          content: result.content,
           timestamp: new Date().toISOString(),
-          position: index
+          position: index,
+          metadata: {
+            platform: 'chatgpt',
+            assets: result.assets
+          }
         });
       }
     });
@@ -58,13 +62,17 @@ export class AIConversationDetector {
     const assistantMessages = document.querySelectorAll(this.claudeSelectors.assistantMessage);
     
     assistantMessages.forEach((messageEl, index) => {
-      const content = this.extractContentFromElement(messageEl);
-      if (content) {
+      const result = this.extractContentWithAssets(messageEl);
+      if (result.content) {
         turns.push({
           role: 'assistant',
-          content,
+          content: result.content,
           timestamp: new Date().toISOString(),
-          position: index
+          position: index,
+          metadata: {
+            platform: 'claude',
+            assets: result.assets
+          }
         });
       }
     });
@@ -87,13 +95,17 @@ export class AIConversationDetector {
     assistantSelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       elements.forEach((el, index) => {
-        const content = this.extractContentFromElement(el);
-        if (content) {
+        const result = this.extractContentWithAssets(el);
+        if (result.content) {
           turns.push({
             role: 'assistant',
-            content,
+            content: result.content,
             timestamp: new Date().toISOString(),
-            position: index
+            position: index,
+            metadata: {
+              platform: 'generic',
+              assets: result.assets
+            }
           });
         }
       });
@@ -102,7 +114,15 @@ export class AIConversationDetector {
     return turns;
   }
 
-  static extractContentFromElement(element: Element): string {
+  public static extractContentFromElement(element: Element): string {
+    const result = this.extractContentWithAssets(element);
+    return result.content;
+  }
+
+  public static extractContentWithAssets(element: Element): { content: string; assets: any[] } {
+    const assets: any[] = [];
+    let assetIndex = 0;
+    
     // Clone to avoid modifying the original
     const clone = element.cloneNode(true) as Element;
     
@@ -123,8 +143,105 @@ export class AIConversationDetector {
       clone.querySelectorAll(selector).forEach(el => el.remove());
     });
 
+    // Process and extract assets
+    this.processAssets(clone, assets, () => `asset-${++assetIndex}`);
+
     // Convert to semantic Markdown
-    return this.convertDOMToMarkdown(clone);
+    const content = this.convertDOMToMarkdown(clone);
+    
+    return { content, assets };
+  }
+
+  private static processAssets(element: Element, assets: any[], namingFn: () => string): void {
+    // Process SVG diagrams
+    const svgs = element.querySelectorAll('svg');
+    svgs.forEach((svg) => {
+      // Skip small/decorative SVGs (icons, etc.)
+      const bbox = svg.getBBox();
+      const width = bbox.width || parseInt(svg.getAttribute('width') || '0');
+      const height = bbox.height || parseInt(svg.getAttribute('height') || '0');
+      
+      // Only process substantial SVGs (diagrams, not icons)
+      if (width > 50 && height > 50) {
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(svg);
+        const assetName = namingFn();
+        
+        // Replace SVG with Markdown image reference
+        const imgReplacement = document.createElement('div');
+        imgReplacement.innerHTML = `![${assetName}](assets/${assetName}.svg)`;
+        svg.parentNode?.replaceChild(imgReplacement, svg);
+        
+        assets.push({
+          type: 'svg',
+          name: `${assetName}.svg`,
+          content: svgString,
+          mimeType: 'image/svg+xml'
+        });
+      }
+    });
+
+    // Process Canvas elements
+    const canvases = element.querySelectorAll('canvas');
+    canvases.forEach((canvas) => {
+      try {
+        const dataUrl = (canvas as HTMLCanvasElement).toDataURL('image/png');
+        const assetName = namingFn();
+        
+        // Replace canvas with Markdown image reference
+        const imgReplacement = document.createElement('div');
+        imgReplacement.innerHTML = `![${assetName}](assets/${assetName}.png)`;
+        canvas.parentNode?.replaceChild(imgReplacement, canvas);
+        
+        assets.push({
+          type: 'canvas',
+          name: `${assetName}.png`,
+          content: dataUrl,
+          mimeType: 'image/png'
+        });
+      } catch (e) {
+        console.warn('Failed to capture canvas:', e);
+      }
+    });
+
+    // Process images (convert data URLs to assets)
+    const images = element.querySelectorAll('img');
+    images.forEach((img) => {
+      const src = img.getAttribute('src');
+      if (src && src.startsWith('data:')) {
+        const assetName = namingFn();
+        
+        // Update src to relative path
+        img.setAttribute('src', `assets/${assetName}.png`);
+        
+        assets.push({
+          type: 'image',
+          name: `${assetName}.png`,
+          content: src,
+          mimeType: 'image/png'
+        });
+      }
+    });
+
+    // Process Mermaid code blocks
+    const codeBlocks = element.querySelectorAll('pre code');
+    codeBlocks.forEach((code) => {
+      const text = code.textContent || '';
+      // Check if it's Mermaid
+      if (text.trim().startsWith('graph') || 
+          text.trim().startsWith('flowchart') ||
+          text.trim().startsWith('sequenceDiagram') ||
+          text.trim().startsWith('gantt') ||
+          text.trim().startsWith('stateDiagram') ||
+          text.trim().startsWith('erDiagram') ||
+          text.trim().startsWith('classDiagram')) {
+        
+        // Ensure it has language tag
+        if (!code.className.includes('mermaid')) {
+          code.classList.add('language-mermaid');
+        }
+      }
+    });
   }
 
   private static convertDOMToMarkdown(element: Element): string {

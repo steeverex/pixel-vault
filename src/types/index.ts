@@ -26,6 +26,7 @@ export interface ConversationTurn {
     model?: string;
     tokens?: number;
     platform?: string;
+    assets?: Asset[];
   };
 }
 
