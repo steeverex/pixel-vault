@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-import path from 'path';
-import fs from 'fs';
 
 test.describe('PIXELVAULT Download Tests', () => {
   test('should generate proper Markdown from captured conversation', async ({ page }) => {
