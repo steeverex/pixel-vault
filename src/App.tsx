@@ -115,15 +115,8 @@ function App() {
       setCaptureResult(response.data);
       setProgress('Preparing download...');
 
-      // Export via background script with confirmation
-      const exportResponse = await chrome.runtime.sendMessage({
-        type: 'EXPORT_MARKDOWN',
-        data: response.data
-      });
-
-      if (!exportResponse || !exportResponse.success) {
-        throw new Error(exportResponse?.error || 'Download failed');
-      }
+      // Convert to Markdown and download in popup context (where URL.createObjectURL is supported)
+      await downloadMarkdown(response.data);
 
       setProgress('');
       setCaptureStatus('success');
@@ -134,6 +127,49 @@ function App() {
       setErrorMessage(message);
       setProgress('');
       setCaptureStatus('error');
+    }
+  };
+
+  const downloadMarkdown = async (data: any) => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `pixelvault-capture-${timestamp}.md`;
+    
+    // Convert conversation turns to Markdown
+    let markdown = `# ${data.title}\n\n`;
+    markdown += `**URL:** ${data.url}\n\n`;
+    markdown += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
+    markdown += `**Messages:** ${data.conversationTurns?.length || 0}\n\n`;
+    markdown += `---\n\n`;
+    
+    // Process conversation turns
+    if (data.conversationTurns && data.conversationTurns.length > 0) {
+      for (const turn of data.conversationTurns) {
+        const role = turn.role === 'user' ? 'User' : 'Assistant';
+        markdown += `## ${role}\n\n`;
+        markdown += `${turn.content}\n\n`;
+      }
+    }
+    
+    // Create blob and object URL in popup context (where URL.createObjectURL is supported)
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+
+    try {
+      // Trigger download using chrome.downloads API
+      const downloadId = await chrome.downloads.download({
+        url: url,
+        filename: filename,
+        saveAs: true
+      });
+      
+      console.log('Download started:', downloadId);
+      
+      // Wait a moment for download to initiate
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+    } finally {
+      // Revoke object URL after download is initiated
+      URL.revokeObjectURL(url);
     }
   };
 

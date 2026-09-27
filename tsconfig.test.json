@@ -6,7 +6,8 @@
     "moduleResolution": "bundler",
     "target": "ES2022",
     "noEmit": true,
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "6.0",
+    "esModuleInterop": true
   },
   "include": ["tests/**/*"]
 }
