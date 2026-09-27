@@ -21,9 +21,11 @@ export interface ConversationTurn {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
+  position?: number;
   metadata?: {
     model?: string;
     tokens?: number;
+    platform?: string;
   };
 }
 

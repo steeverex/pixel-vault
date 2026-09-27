@@ -30,13 +30,14 @@ test.describe('PIXELVAULT Download Tests', () => {
       let markdown = `# ${data.title}\n\n`;
       markdown += `**URL:** ${data.url}\n\n`;
       markdown += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
-      markdown += `**Messages:** ${data.conversationTurns?.length || 0}\n\n`;
+      markdown += `**Responses:** ${data.conversationTurns?.length || 0}\n\n`;
       markdown += `---\n\n`;
       
       for (const turn of data.conversationTurns) {
-        const role = turn.role === 'user' ? 'User' : 'Assistant';
-        markdown += `## ${role}\n\n`;
-        markdown += `${turn.content}\n\n`;
+        if (turn.role === 'assistant') {
+          markdown += `${turn.content}\n\n`;
+          markdown += `---\n\n`;
+        }
       }
       
       return markdown;
@@ -46,12 +47,12 @@ test.describe('PIXELVAULT Download Tests', () => {
 
     // Verify Markdown structure
     expect(markdownContent).toContain('# Test Conversation');
-    expect(markdownContent).toContain('## User');
-    expect(markdownContent).toContain('## Assistant');
     expect(markdownContent).toContain('## Key Concepts');
     expect(markdownContent).toContain('```python');
     expect(markdownContent).toContain('**Supervised Learning**');
     expect(markdownContent).toContain('Unsupervised Learning');
+    // Should NOT contain user message
+    expect(markdownContent).not.toContain('Can you help me understand machine learning?');
 
     // Verify Blob creation works
     const blobCreated = await page.evaluate((markdown: string) => {
@@ -70,7 +71,7 @@ test.describe('PIXELVAULT Download Tests', () => {
   });
 
   test('should handle long conversation capture without timeout', async ({ page }) => {
-    // Mock long conversation data
+    // Mock long conversation data (assistant only)
     const mockData = {
       title: 'Long ChatGPT Conversation Test',
       url: 'https://example.com',
@@ -93,13 +94,14 @@ test.describe('PIXELVAULT Download Tests', () => {
       let markdown = `# ${data.title}\n\n`;
       markdown += `**URL:** ${data.url}\n\n`;
       markdown += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
-      markdown += `**Messages:** ${data.conversationTurns?.length || 0}\n\n`;
+      markdown += `**Responses:** ${data.conversationTurns?.length || 0}\n\n`;
       markdown += `---\n\n`;
       
       for (const turn of data.conversationTurns) {
-        const role = turn.role === 'user' ? 'User' : 'Assistant';
-        markdown += `## ${role}\n\n`;
-        markdown += `${turn.content}\n\n`;
+        if (turn.role === 'assistant') {
+          markdown += `${turn.content}\n\n`;
+          markdown += `---\n\n`;
+        }
       }
       
       return markdown;
@@ -111,8 +113,6 @@ test.describe('PIXELVAULT Download Tests', () => {
     console.log(`Long conversation Markdown generation took ${duration}ms`);
 
     expect(markdownContent).toContain('# Long ChatGPT Conversation Test');
-    expect(markdownContent).toContain('## User');
-    expect(markdownContent).toContain('## Assistant');
     expect(markdownContent).toContain('**bold text**');
     expect(markdownContent).toContain('`inline code`');
     expect(markdownContent).toContain('[links](https://example.com)');
@@ -146,13 +146,14 @@ test.describe('PIXELVAULT Download Tests', () => {
       let markdown = `# ${data.title}\n\n`;
       markdown += `**URL:** ${data.url}\n\n`;
       markdown += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
-      markdown += `**Messages:** ${data.conversationTurns?.length || 0}\n\n`;
+      markdown += `**Responses:** ${data.conversationTurns?.length || 0}\n\n`;
       markdown += `---\n\n`;
       
       for (const turn of data.conversationTurns) {
-        const role = turn.role === 'user' ? 'User' : 'Assistant';
-        markdown += `## ${role}\n\n`;
-        markdown += `${turn.content}\n\n`;
+        if (turn.role === 'assistant') {
+          markdown += `${turn.content}\n\n`;
+          markdown += `---\n\n`;
+        }
       }
       
       return markdown;
@@ -168,5 +169,35 @@ test.describe('PIXELVAULT Download Tests', () => {
     expect(markdownContent).toContain('### Complexity');
     expect(markdownContent).toContain('- Time: O(log n)');
     expect(markdownContent).toContain('- Space: O(1)');
+    // Should NOT contain user question
+    expect(markdownContent).not.toContain('Can you explain binary search?');
+  });
+
+  test('should load assistant-only fixture', async ({ page }) => {
+    const fixturePath = process.cwd() + '/tests/fixtures/chatgpt-assistant-only.html';
+    await page.goto(`file://${fixturePath}`);
+    await expect(page).toHaveTitle('ChatGPT Assistant-Only Test');
+  });
+
+  test('should detect correct number of assistant messages in fixture', async ({ page }) => {
+    const fixturePath = process.cwd() + '/tests/fixtures/chatgpt-assistant-only.html';
+    await page.goto(`file://${fixturePath}`);
+
+    const userMessages = page.locator('[data-message-author-role="user"]');
+    await expect(userMessages).toHaveCount(7);
+
+    const assistantMessages = page.locator('[data-message-author-role="assistant"]');
+    await expect(assistantMessages).toHaveCount(5);
+  });
+
+  test('should verify fixture has no conversation-turn containers', async ({ page }) => {
+    const fixturePath = process.cwd() + '/tests/fixtures/chatgpt-assistant-only.html';
+    await page.goto(`file://${fixturePath}`);
+
+    const conversationTurns = page.locator('[data-testid="conversation-turn"]');
+    await expect(conversationTurns).toHaveCount(0);
+
+    const markdownElements = page.locator('.markdown');
+    await expect(markdownElements).toHaveCount(0);
   });
 });

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatGPT Assistant-Only Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      background: #fff;
+    }
+    [data-message-author-role] {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    [data-message-author-role="user"] {
+      background: #e3f2fd;
+    }
+    [data-message-author-role="assistant"] {
+      background: #f3e5f5;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: 'Courier New', monospace;
+    }
+    h1, h2, h3 {
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      padding-left: 1em;
+      margin: 1em 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>ChatGPT Assistant-Only Test Fixture</h1>
+  <p>This fixture simulates ChatGPT DOM structure with 7 user messages and 5 assistant messages. No conversation-turn containers or .markdown classes.</p>
+
+  <!-- User Message 1 -->
+  <div data-message-author-role="user">
+    <p>What is machine learning?</p>
+  </div>
+
+  <!-- Assistant Message 1 -->
+  <div data-message-author-role="assistant">
+    <p>Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.</p>
+    <h2>Key Concepts</h2>
+    <ul>
+      <li><strong>Supervised Learning</strong>: Learning from labeled data</li>
+      <li><strong>Unsupervised Learning</strong>: Finding patterns in unlabeled data</li>
+      <li><strong>Reinforcement Learning</strong>: Learning through trial and error</li>
+    </ul>
+  </div>
+
+  <!-- User Message 2 -->
+  <div data-message-author-role="user">
+    <p>Can you show me a code example?</p>
+  </div>
+
+  <!-- Assistant Message 2 -->
+  <div data-message-author-role="assistant">
+    <p>Here's a simple Python example using scikit-learn:</p>
+    <pre><code class="language-python">from sklearn.linear_model import LinearRegression
+import numpy as np
+
+# Create sample data
+X = np.array([[1], [2], [3], [4], [5]])
+y = np.array([2, 4, 6, 8, 10])
+
+# Train model
+model = LinearRegression()
+model.fit(X, y)
+
+# Make prediction
+prediction = model.predict([[6]])
+print(f"Prediction: {prediction[0]}")</code></pre>
+  </div>
+
+  <!-- User Message 3 -->
+  <div data-message-author-role="user">
+    <p>What about deep learning?</p>
+  </div>
+
+  <!-- Assistant Message 3 -->
+  <div data-message-author-role="assistant">
+    <p>Deep learning uses neural networks with multiple layers to learn hierarchical representations of data.</p>
+    <h3>Popular Frameworks</h3>
+    <ol>
+      <li>TensorFlow/Keras</li>
+      <li>PyTorch</li>
+      <li>JAX</li>
+    </ol>
+    <blockquote>Deep learning excels at tasks like image recognition, natural language processing, and speech recognition.</blockquote>
+  </div>
+
+  <!-- User Message 4 -->
+  <div data-message-author-role="user">
+    <p>How do I choose between them?</p>
+  </div>
+
+  <!-- Assistant Message 4 -->
+  <div data-message-author-role="assistant">
+    <p>The choice depends on your use case:</p>
+    <h3>TensorFlow/Keras</h3>
+    <ul>
+      <li>Good for production deployment</li>
+      <li>Strong ecosystem and tooling</li>
+      <li>Widely used in industry</li>
+    </ul>
+    <h3>PyTorch</h3>
+    <ul>
+      <li>Easier to learn and debug</li>
+      <li>Popular in research</li>
+      <li>Dynamic computation graph</li>
+    </ul>
+  </div>
+
+  <!-- User Message 5 -->
+  <div data-message-author-role="user">
+    <p>What are some common applications?</p>
+  </div>
+
+  <!-- Assistant Message 5 -->
+  <div data-message-author-role="assistant">
+    <p>Machine learning has numerous applications across industries:</p>
+    <h3>Healthcare</h3>
+    <ul>
+      <li>Disease diagnosis from medical images</li>
+      <li>Drug discovery</li>
+      <li>Predictive analytics for patient outcomes</li>
+    </ul>
+    <h3>Finance</h3>
+    <ul>
+      <li>Fraud detection</li>
+      <li>Algorithmic trading</li>
+      <li>Credit scoring</li>
+    </ul>
+    <h3>Technology</h3>
+    <ul>
+      <li>Recommendation systems</li>
+      <li>Natural language processing</li>
+      <li>Computer vision</li>
+    </ul>
+  </div>
+
+  <!-- User Message 6 -->
+  <div data-message-author-role="user">
+    <p>What are the challenges?</p>
+  </div>
+
+  <!-- User Message 7 -->
+  <div data-message-author-role="user">
+    <p>Can you explain bias in ML?</p>
+  </div>
+
+  <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+    <em>Fixture contains 7 user messages and 5 assistant messages. Assistant-only export should capture exactly 5 responses.</em>
+  </p>
+</body>
+</html>

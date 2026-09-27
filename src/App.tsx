@@ -134,19 +134,20 @@ function App() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `pixelvault-capture-${timestamp}.md`;
     
-    // Convert conversation turns to Markdown
+    // Convert conversation turns to Markdown - assistant only, no extra headings
     let markdown = `# ${data.title}\n\n`;
     markdown += `**URL:** ${data.url}\n\n`;
     markdown += `**Captured:** ${new Date(data.timestamp).toLocaleString()}\n\n`;
-    markdown += `**Messages:** ${data.conversationTurns?.length || 0}\n\n`;
+    markdown += `**Responses:** ${data.conversationTurns?.length || 0}\n\n`;
     markdown += `---\n\n`;
     
-    // Process conversation turns
+    // Process only assistant messages
     if (data.conversationTurns && data.conversationTurns.length > 0) {
       for (const turn of data.conversationTurns) {
-        const role = turn.role === 'user' ? 'User' : 'Assistant';
-        markdown += `## ${role}\n\n`;
-        markdown += `${turn.content}\n\n`;
+        if (turn.role === 'assistant') {
+          markdown += `${turn.content}\n\n`;
+          markdown += `---\n\n`;
+        }
       }
     }
     

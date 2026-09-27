@@ -49,6 +49,11 @@ async function handleMarkdownCapture(_options: ExportOptions): Promise<CaptureRe
 
   console.log(`Captured ${conversationTurns.length} conversation turns`);
 
+  // Check if we captured any assistant messages
+  if (conversationTurns.length === 0) {
+    throw new Error('No assistant messages found. The page may not contain any AI responses yet.');
+  }
+
   // Collect only content assets (images, SVGs, canvas) from captured content
   console.log('Collecting content assets...');
   const contentAssets = await collectContentAssets(document, conversationTurns);
@@ -138,31 +143,26 @@ async function captureVisibleTurns(document: Document, turns: any[], seenContent
 }
 
 async function captureChatGPTTurns(document: Document, turns: any[], seenContent: Set<string>): Promise<void> {
-  const containers = document.querySelectorAll('[data-testid="conversation-turn"]');
+  // Query assistant messages directly - no container required
+  const assistantMessages = document.querySelectorAll('[data-message-author-role="assistant"]');
   
-  for (const container of Array.from(containers)) {
+  for (const messageEl of Array.from(assistantMessages)) {
     try {
-      const isUser = container.querySelector('[data-message-author-role="user"]') !== null;
-      const isAssistant = container.querySelector('[data-message-author-role="assistant"]') !== null;
-      const contentEl = container.querySelector('.markdown, .prose');
-      
-      if (!contentEl || (!isUser && !isAssistant)) continue;
-
       // Create content fingerprint for deduplication
-      const contentFingerprint = createContentFingerprint(contentEl);
+      const contentFingerprint = createContentFingerprint(messageEl);
       if (seenContent.has(contentFingerprint)) continue;
       seenContent.add(contentFingerprint);
 
       // Get position for chronological ordering
-      const rect = container.getBoundingClientRect();
+      const rect = messageEl.getBoundingClientRect();
       const position = rect.top + window.scrollY;
 
-      // Convert to semantic Markdown
-      const markdownContent = await convertDOMToMarkdown(contentEl);
+      // Use the detector to extract content
+      const content = AIConversationDetector.extractContentFromElement(messageEl);
       
       turns.push({
-        role: isUser ? 'user' : 'assistant',
-        content: markdownContent,
+        role: 'assistant',
+        content,
         timestamp: new Date().toISOString(),
         position,
         metadata: {
@@ -176,28 +176,23 @@ async function captureChatGPTTurns(document: Document, turns: any[], seenContent
 }
 
 async function captureClaudeTurns(document: Document, turns: any[], seenContent: Set<string>): Promise<void> {
-  const containers = document.querySelectorAll('[data-testid="message"]');
+  // Query assistant messages directly
+  const assistantMessages = document.querySelectorAll('[data-is-from-user="false"]');
   
-  for (const container of Array.from(containers)) {
+  for (const messageEl of Array.from(assistantMessages)) {
     try {
-      const isUser = container.matches('[data-is-from-user="true"]');
-      const isAssistant = container.matches('[data-is-from-user="false"]');
-      const contentEl = container.querySelector('.font-claude-message, .prose');
-      
-      if (!contentEl || (!isUser && !isAssistant)) continue;
-
-      const contentFingerprint = createContentFingerprint(contentEl);
+      const contentFingerprint = createContentFingerprint(messageEl);
       if (seenContent.has(contentFingerprint)) continue;
       seenContent.add(contentFingerprint);
 
-      const rect = container.getBoundingClientRect();
+      const rect = messageEl.getBoundingClientRect();
       const position = rect.top + window.scrollY;
 
-      const markdownContent = await convertDOMToMarkdown(contentEl);
+      const content = AIConversationDetector.extractContentFromElement(messageEl);
       
       turns.push({
-        role: isUser ? 'user' : 'assistant',
-        content: markdownContent,
+        role: 'assistant',
+        content,
         timestamp: new Date().toISOString(),
         position,
         metadata: {
@@ -211,39 +206,15 @@ async function captureClaudeTurns(document: Document, turns: any[], seenContent:
 }
 
 async function captureGenericTurns(document: Document, turns: any[], seenContent: Set<string>): Promise<void> {
-  const userSelectors = ['.user-message', '.message.user', '[data-role="user"]'];
-  const assistantSelectors = ['.assistant-message', '.message.assistant', '[data-role="assistant"]', '.ai-message'];
+  const assistantSelectors = [
+    '.assistant-message',
+    '.message.assistant',
+    '[data-role="assistant"]',
+    '.ai-message',
+    '.bot-message'
+  ];
 
-  // Try user messages
-  for (const selector of userSelectors) {
-    const elements = document.querySelectorAll(selector);
-    for (const el of Array.from(elements)) {
-      try {
-        const contentFingerprint = createContentFingerprint(el);
-        if (seenContent.has(contentFingerprint)) continue;
-        seenContent.add(contentFingerprint);
-
-        const rect = el.getBoundingClientRect();
-        const position = rect.top + window.scrollY;
-
-        const markdownContent = await convertDOMToMarkdown(el);
-        
-        turns.push({
-          role: 'user',
-          content: markdownContent,
-          timestamp: new Date().toISOString(),
-          position,
-          metadata: {
-            platform: 'generic'
-          }
-        });
-      } catch (e) {
-        console.warn('Error capturing generic user turn:', e);
-      }
-    }
-  }
-
-  // Try assistant messages
+  // Try assistant messages only
   for (const selector of assistantSelectors) {
     const elements = document.querySelectorAll(selector);
     for (const el of Array.from(elements)) {
@@ -255,11 +226,11 @@ async function captureGenericTurns(document: Document, turns: any[], seenContent
         const rect = el.getBoundingClientRect();
         const position = rect.top + window.scrollY;
 
-        const markdownContent = await convertDOMToMarkdown(el);
+        const content = AIConversationDetector.extractContentFromElement(el);
         
         turns.push({
           role: 'assistant',
-          content: markdownContent,
+          content,
           timestamp: new Date().toISOString(),
           position,
           metadata: {
@@ -277,117 +248,6 @@ function createContentFingerprint(element: Element): string {
   const text = element.textContent?.slice(0, 200) || '';
   const className = element.className || '';
   return `${className}:${text}`.replace(/\s+/g, '');
-}
-
-async function convertDOMToMarkdown(element: Element): Promise<string> {
-  let markdown = '';
-  
-  // Clone to avoid modifying original
-  const clone = element.cloneNode(true) as Element;
-  
-  // Process each node
-  for (const child of Array.from(clone.childNodes)) {
-    markdown += processNode(child);
-  }
-  
-  return markdown.trim();
-}
-
-function processNode(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent || '';
-  }
-  
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return '';
-  }
-  
-  const element = node as Element;
-  const tagName = element.tagName.toLowerCase();
-  
-  switch (tagName) {
-    case 'h1':
-    case 'h2':
-    case 'h3':
-    case 'h4':
-    case 'h5':
-    case 'h6':
-      const level = parseInt(tagName.charAt(1));
-      return `\n${'#'.repeat(level)} ${element.textContent?.trim() || ''}\n\n`;
-    
-    case 'p':
-      return `${element.textContent?.trim() || ''}\n\n`;
-    
-    case 'strong':
-    case 'b':
-      return `**${element.textContent?.trim() || ''}**`;
-    
-    case 'em':
-    case 'i':
-      return `*${element.textContent?.trim() || ''}*`;
-    
-    case 'code':
-      const codeContent = element.textContent?.trim() || '';
-      // Check if inside pre
-      if (element.parentElement?.tagName === 'PRE') {
-        return codeContent;
-      }
-      return `\`${codeContent}\``;
-    
-    case 'pre':
-      const preContent = element.textContent?.trim() || '';
-      const codeElement = element.querySelector('code');
-      const language = codeElement?.className?.match(/language-(\w+)/)?.[1] || '';
-      return `\n\`\`\`${language}\n${preContent}\n\`\`\`\n\n`;
-    
-    case 'ul':
-    case 'ol':
-      let listMarkdown = '\n';
-      const items = element.querySelectorAll(':scope > li');
-      items.forEach((item, index) => {
-        const prefix = tagName === 'ul' ? '- ' : `${index + 1}. `;
-        listMarkdown += `${prefix}${item.textContent?.trim() || ''}\n`;
-      });
-      return listMarkdown + '\n';
-    
-    case 'li':
-      return `${element.textContent?.trim() || ''}\n`;
-    
-    case 'blockquote':
-      return `> ${element.textContent?.trim() || ''}\n\n`;
-    
-    case 'a':
-      const href = element.getAttribute('href') || '';
-      const text = element.textContent?.trim() || '';
-      return `[${text}](${href})`;
-    
-    case 'img':
-      const src = element.getAttribute('src') || '';
-      const alt = element.getAttribute('alt') || '';
-      return `![${alt}](${src})`;
-    
-    case 'br':
-      return '\n';
-    
-    case 'div':
-    case 'span':
-    case 'section':
-    case 'article':
-      // Process children
-      let childMarkdown = '';
-      for (const child of Array.from(element.childNodes)) {
-        childMarkdown += processNode(child);
-      }
-      return childMarkdown;
-    
-    default:
-      // Process children for unknown elements
-      let defaultMarkdown = '';
-      for (const child of Array.from(element.childNodes)) {
-        defaultMarkdown += processNode(child);
-      }
-      return defaultMarkdown;
-  }
 }
 
 async function collectContentAssets(document: Document, conversationTurns: any[]): Promise<any[]> {
@@ -427,7 +287,7 @@ async function collectContentAssets(document: Document, conversationTurns: any[]
     const src = (img as HTMLImageElement).src;
     if (src && !src.startsWith('data:') && !processedUrls.has(src)) {
       // Check if this image is within a conversation turn
-      const container = img.closest('[data-testid="conversation-turn"], [data-testid="message"]');
+      const container = img.closest('[data-message-author-role]');
       if (container) {
         processedUrls.add(src);
         try {
